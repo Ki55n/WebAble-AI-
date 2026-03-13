@@ -17,8 +17,6 @@ interface AutomationInputCardProps {
   onSubmit: (e: React.FormEvent) => void;
   buildSitemapFirst: boolean;
   setBuildSitemapFirst: (value: boolean) => void;
-  findSiteOwners: boolean;
-  setFindSiteOwners: (value: boolean) => void;
 }
 
 export default function AutomationInputCard({
@@ -30,8 +28,6 @@ export default function AutomationInputCard({
   onSubmit,
   buildSitemapFirst,
   setBuildSitemapFirst,
-  findSiteOwners,
-  setFindSiteOwners
 }: AutomationInputCardProps) {
   const [isFrameworkMenuOpen, setIsFrameworkMenuOpen] = useState(false);
   const [isSitemapMenuOpen, setIsSitemapMenuOpen] = useState(false);
@@ -136,41 +132,24 @@ export default function AutomationInputCard({
                 placeholder="https://example.com, https://another.com"
                 required
                 className={`w-full py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all focus:shadow-sm ${
-                  buildSitemapFirst || findSiteOwners ? 'pl-11 pr-32' : 'pl-11 pr-4'
+                  buildSitemapFirst ? 'pl-11 pr-32' : 'pl-11 pr-4'
                 }`}
               />
-              {(buildSitemapFirst || findSiteOwners) && (
+              {buildSitemapFirst && (
                 <div className="absolute right-2 z-10 flex items-center gap-2">
-                  {buildSitemapFirst && (
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full">
-                      <button
-                        type="button"
-                        onClick={() => setBuildSitemapFirst(false)}
-                        className="p-0.5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors"
-                        title="Remove build sitemap"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                      <span className="text-sm font-medium text-blue-700">Build sitemap</span>
-                    </div>
-                  )}
-                  {findSiteOwners && (
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 border border-teal-200 rounded-full">
-                      <button
-                        type="button"
-                        onClick={() => setFindSiteOwners(false)}
-                        className="p-0.5 rounded-full bg-teal-100 hover:bg-teal-200 text-teal-600 transition-colors"
-                        title="Remove find site owners"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                      <span className="text-sm font-medium text-teal-700">Find owners</span>
-                    </div>
-                  )}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full">
+                    <button
+                      type="button"
+                      onClick={() => setBuildSitemapFirst(false)}
+                      className="p-0.5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors"
+                      title="Remove build sitemap"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    <span className="text-sm font-medium text-blue-700">Build sitemap</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -199,31 +178,6 @@ export default function AutomationInputCard({
                       <p className="text-xs text-gray-600 mt-1">
                         Automatically discover all public pages before auditing. <span className="font-semibold text-amber-700">Adds 2-3 minutes to processing time.</span>
                       </p>
-                    </div>
-                  </div>
-                  <div className="border-t border-gray-200 pt-4">
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        id="find-site-owners-dropdown"
-                        checked={findSiteOwners}
-                        onChange={(e) => {
-                          setFindSiteOwners(e.target.checked);
-                          if (e.target.checked) {
-                            // Close dropdown after checking
-                            setTimeout(() => setIsSitemapMenuOpen(false), 200);
-                          }
-                        }}
-                        className="mt-0.5 w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-                      />
-                      <div className="flex-1">
-                        <label htmlFor="find-site-owners-dropdown" className="text-sm font-medium text-gray-900 cursor-pointer block">
-                          Find site owners
-                        </label>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Research and find contact information for accessibility owners. <span className="font-semibold text-teal-700">Runs in parallel with audit.</span>
-                        </p>
-                      </div>
                     </div>
                   </div>
                 </div>
