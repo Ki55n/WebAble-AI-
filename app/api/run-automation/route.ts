@@ -4,17 +4,17 @@ export async function POST(req: NextRequest) {
   try {
     const { url, goal } = await req.json();
 
-    if (!process.env.MINO_API_KEY) {
+    if (!process.env.TINYFISH_API_KEY) {
       return NextResponse.json(
-        { error: 'MINO_API_KEY is not set' }, 
+        { error: 'TINYFISH_API_KEY is not set' }, 
         { status: 500 }
       );
     }
 
-    const response = await fetch("https://mino.ai/v1/automation/run-sse", {
+    const response = await fetch("https://agent.tinyfish.ai/v1/automation/run-sse", {
       method: "POST",
       headers: {
-        "X-API-Key": process.env.MINO_API_KEY,
+        "X-API-Key": process.env.TINYFISH_API_KEY,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

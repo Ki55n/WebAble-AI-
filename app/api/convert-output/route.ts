@@ -1,30 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import {
+  createPartFromBase64,
+  createPartFromText,
+  GoogleGenAI,
+  Type,
+} from '@google/genai';
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  timeout: 60000, // 60s timeout
-  maxRetries: 3,
+const client = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
 });
+
+async function createImagePart(imageUrl: string) {
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch screenshot: ${imageUrl} (${response.status})`);
+  }
+
+  const contentType = response.headers.get('content-type') || 'image/png';
+  const arrayBuffer = await response.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString('base64');
+
+  return createPartFromBase64(base64, contentType);
+}
+
+function parseGeminiJsonResponse(responseText: string) {
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    const match =
+      responseText.match(/```json\n([\s\S]*?)\n```/) ||
+      responseText.match(/{[\s\S]*}/);
+
+    if (match) {
+      return JSON.parse(match[1] || match[0]);
+    }
+
+    return { summary: responseText, tickets: [] };
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: "OPENAI_API_KEY is not set" }, { status: 500 });
+      return NextResponse.json({ error: "GEMINI_API_KEY is not set" }, { status: 500 });
     }
 
     const { screenshotUrl, screenshotUrls, automationLog, url } = await req.json();
     console.log("Input Body:", JSON.stringify({ screenshotUrl, screenshotUrls, automationLog, url }, null, 2));
 
     const urls = screenshotUrls || (screenshotUrl ? [screenshotUrl] : []);
-    
     const urlContext = url ? `\n\nThis analysis is for the URL: ${url}` : '';
-    
-    const content: any[] = [
-      {
-        type: "text",
-        text: `Here is the log from the automation run:\n\n${automationLog}${urlContext}\n\nPlease analyze this output.
+
+    const prompt = `Here is the log from the automation run:\n\n${automationLog}${urlContext}\n\nPlease analyze this output.
 
         Do not include any introductory text. Just the findings.
         
@@ -44,57 +72,56 @@ export async function POST(req: NextRequest) {
         
         CRITICAL: The "tickets" array must contain one ticket for EACH distinct finding. Each finding gets its own ticket object in the array. Create a minimum of 3 tickets total.
         
-        Do not wrap the JSON in markdown code blocks. Just return the raw JSON string.`,
-      },
-    ];
+        Do not wrap the JSON in markdown code blocks. Just return the raw JSON string.`;
 
-    if (urls.length > 0) {
-      urls.forEach((url: string) => {
-        content.push({
-          type: "image_url",
-          image_url: {
-            url: url,
+    const imageParts = await Promise.all(urls.map((imageUrl: string) => createImagePart(imageUrl)));
+    const response = await client.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [createPartFromText(prompt), ...imageParts],
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          required: ["summary", "tickets"],
+          properties: {
+            summary: {
+              type: Type.STRING,
+            },
+            tickets: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                required: ["title", "description", "priority"],
+                properties: {
+                  title: {
+                    type: Type.STRING,
+                  },
+                  description: {
+                    type: Type.STRING,
+                  },
+                  priority: {
+                    type: Type.STRING,
+                    enum: ["high", "medium", "low"],
+                  },
+                },
+              },
+            },
           },
-        });
-      });
-    }
-
-    const messages: any[] = [
-      {
-        role: "user",
-        content: content,
+        },
       },
-    ];
-
-    const response = await client.chat.completions.create({
-      model: "gpt-5.2",
-      messages: messages,
-      response_format: { type: "json_object" }
     });
 
-    console.log("OpenAI API Response Body:", JSON.stringify(response, null, 2));
+    console.log("Gemini API Response Body:", JSON.stringify(response, null, 2));
 
-    const responseContent = response.choices[0].message.content || "{}";
-    console.log("OpenAI API Raw Content:", responseContent);
-    
-    let parsedData;
-    try {
-        parsedData = JSON.parse(responseContent);
-        console.log("OpenAI API Parsed Data:", JSON.stringify(parsedData, null, 2));
-    } catch (e) {
-        // Fallback for markdown wrapped JSON
-        const match = responseContent.match(/```json\n([\s\S]*?)\n```/) || responseContent.match(/{[\s\S]*}/);
-        if (match) {
-            parsedData = JSON.parse(match[1] || match[0]);
-        } else {
-             // Return raw content if parsing fails, but wrapped in structure
-            return NextResponse.json({ summary: responseContent, tickets: [] });
-        }
-    }
+    const responseContent = response.text || "{}";
+    console.log("Gemini API Raw Content:", responseContent);
+
+    const parsedData = parseGeminiJsonResponse(responseContent);
+    console.log("Gemini API Parsed Data:", JSON.stringify(parsedData, null, 2));
 
     return NextResponse.json(parsedData);
   } catch (error) {
-    console.error("OpenAI API Error:", error);
+    console.error("Gemini API Error:", error);
     return NextResponse.json(
       { error: "Internal Server Error", details: String(error) },
       { status: 500 }

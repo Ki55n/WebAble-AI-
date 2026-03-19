@@ -9,7 +9,7 @@ export default function YutoriBrowserPage() {
             Accessibility Agent
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Test the Mino AI automation API with real-time streaming responses.
+            Test the Tinyfish AI automation API with real-time streaming responses.
           </p>
         </div>
         

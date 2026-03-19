@@ -42,9 +42,12 @@ interface AutomationFormProps {
 }
 
 const STORAGE_KEY = 'accessibility-audit-sessions';
+const isBrowser = () => typeof window !== 'undefined';
 
 // Helper functions for localStorage
 const saveSessionsToStorage = (sessions: Session[]) => {
+  if (!isBrowser()) return;
+
   try {
     const serializable = sessions.map(session => {
       if (session.type === 'audit') {
@@ -67,6 +70,8 @@ const saveSessionsToStorage = (sessions: Session[]) => {
 };
 
 const loadSessionsFromStorage = (): Session[] => {
+  if (!isBrowser()) return [];
+
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return [];
@@ -110,10 +115,11 @@ export default function AutomationForm({ isPanelOpen: externalPanelOpen, onPanel
     }
   }, []);
   
-  const [sessions, setSessions] = useState<Session[]>(() => loadSessionsFromStorage());
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [internalPanelOpen, setInternalPanelOpen] = useState(false);
   const resumedTasksRef = useRef<Set<string>>(new Set());
+  const hasLoadedSessionsRef = useRef(false);
   
   const isSidePanelOpen = externalPanelOpen !== undefined ? externalPanelOpen : internalPanelOpen;
   const setIsSidePanelOpen = (isOpen: boolean) => {
@@ -123,6 +129,12 @@ export default function AutomationForm({ isPanelOpen: externalPanelOpen, onPanel
       setInternalPanelOpen(isOpen);
     }
   };
+
+  useEffect(() => {
+    const loadedSessions = loadSessionsFromStorage();
+    setSessions(loadedSessions);
+    hasLoadedSessionsRef.current = true;
+  }, []);
 
   // Auto-select most recent session on initial load
   useEffect(() => {
@@ -134,6 +146,8 @@ export default function AutomationForm({ isPanelOpen: externalPanelOpen, onPanel
 
   // Save sessions to localStorage whenever they change
   useEffect(() => {
+    if (!hasLoadedSessionsRef.current) return;
+
     if (sessions.length > 0) {
       saveSessionsToStorage(sessions);
     }
