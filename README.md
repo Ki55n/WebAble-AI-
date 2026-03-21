@@ -34,3 +34,54 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Vendor Audit API (TinyFish + Reports)
+
+The app now includes a Next.js-native vendor security audit flow backed by
+TinyFish, JWT auth, MongoDB persistence, and PDF report downloads.
+
+### Required environment variables
+
+Add these to `.env`:
+
+```bash
+TINYFISH_API_KEY=your_tinyfish_api_key
+MONGODB_URI=your_mongodb_connection_uri
+JWT_SECRET=your_jwt_signing_secret
+```
+
+Optional demo login overrides:
+
+```bash
+DEMO_LOGIN_EMAIL=test@vendorshield.com
+DEMO_LOGIN_PASSWORD=pass
+DEMO_LOGIN_USER_ID=user123
+```
+
+### API Documentation
+
+The full API documentation is available at `/api/docs`. It provides detailed information on:
+- Authentication
+- Vendor security audits (SSE stream)
+- Report management and PDF downloads
+- Yutori browser agent tasks
+- Linear and AI integrations
+
+### Routes
+
+- `GET /api/docs` (Swagger UI)
+- `POST /api/auth/login` and `POST /api/login`
+- `POST /api/audit` (auth required, SSE stream; final event type: `audit_saved`)
+- `GET /api/reports` (auth required)
+- `GET /api/reports/:id` (auth required)
+- `GET /api/reports/:id/download` (auth required)
+- `GET /api/report/:id/download` (compatibility path)
+
+### UI
+
+A dedicated page is available at `/vendor-audit` to:
+
+- sign in with demo credentials
+- run vendor audits
+- view saved reports
+- download PDF reports

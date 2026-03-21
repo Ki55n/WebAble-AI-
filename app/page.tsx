@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import AutomationForm from "./components/AutomationForm";
 
 export default function Home() {
@@ -24,12 +25,20 @@ export default function Home() {
             <span className="font-semibold text-lg">WebAble AI</span>
           </div>
 
-          <button
-            onClick={() => setIsPanelOpen(!isPanelOpen)}
-            className="bg-emerald-800 hover:bg-emerald-900 text-white px-4 py-2 rounded-lg shadow"
-          >
-            Start Scan
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsPanelOpen(!isPanelOpen)}
+              className="bg-emerald-800 hover:bg-emerald-900 text-white px-4 py-2 rounded-lg shadow"
+            >
+              Start Scan
+            </button>
+            <Link
+              href="/vendor-audit"
+              className="bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-200 px-4 py-2 rounded-lg shadow-sm"
+            >
+              Vendor Audit
+            </Link>
+          </div>
 
         </div>
       </header>
