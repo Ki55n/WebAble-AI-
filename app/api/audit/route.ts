@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { AuthError, requireAuthUser } from "@/lib/server/auth";
+import { getOptionalAuthUser } from "@/lib/server/auth";
 import { connectToDatabase } from "@/lib/server/db";
 import { requireEnv } from "@/lib/server/env";
 import { Report } from "@/lib/server/models/report";
@@ -26,7 +26,7 @@ function toSseData(data: unknown, event?: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = requireAuthUser(request);
+    const user = getOptionalAuthUser(request);
     const body = await request.json();
     const vendorInput = typeof body?.vendor === "string" ? body.vendor : "";
 
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
 
             const normalized = normalizeAuditOutput(state.finalOutput);
             const report = await Report.create({
-              userId: user.id,
+              userId: user?.id,
               runId: randomUUID(),
               vendor,
               score: normalized.result.score,
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
             clearInterval(heartbeat);
             closeStream();
           }
-        })();
+        })()
       },
     });
 
@@ -240,10 +240,6 @@ export async function POST(request: NextRequest) {
 
     return new NextResponse(auditStream, { headers, status: 200 });
   } catch (error) {
-    if (error instanceof AuthError) {
-      return NextResponse.json({ msg: error.message }, { status: error.status });
-    }
-
     const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
       { msg: "Audit failed", error: message },

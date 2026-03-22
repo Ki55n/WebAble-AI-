@@ -8,7 +8,7 @@ import {
 
 const reportSchema = new Schema(
   {
-    userId: { type: String, required: true, index: true },
+    userId: { type: String, index: true },
     runId: { type: String, required: true, index: true },
     vendor: { type: String, required: true },
     score: { type: Number, required: true },

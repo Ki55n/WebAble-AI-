@@ -416,6 +416,15 @@ export default function VendorAuditPage() {
                   </ul>
                 </div>
               )}
+
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => downloadReport(latestAudit.reportId)}
+                  className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-800"
+                >
+                  Download PDF
+                </button>
+              </div>
             </div>
           )}
         </section>

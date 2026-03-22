@@ -23,6 +23,9 @@ export async function POST(request: NextRequest) {
   const allowedPassword = process.env.DEMO_LOGIN_PASSWORD ?? "pass";
   const userId = process.env.DEMO_LOGIN_USER_ID ?? "user123";
 
+  console.log("Allowed Email: ", allowedEmail);
+  console.log("Allowed Password: ", allowedPassword);
+
   if (email !== allowedEmail || password !== allowedPassword) {
     return NextResponse.json({ msg: "Invalid creds" }, { status: 401 });
   }

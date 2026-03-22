@@ -71,3 +71,15 @@ export function requireAuthUser(request: NextRequest): AuthUser {
   return verifyAuthToken(token);
 }
 
+export function getOptionalAuthUser(request: NextRequest): AuthUser | null {
+  try {
+    const token = extractBearerToken(request);
+    if (!token) {
+      return null;
+    }
+    return verifyAuthToken(token);
+  } catch {
+    return null;
+  }
+}
+

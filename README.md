@@ -77,7 +77,35 @@ The full API documentation is available at `/api/docs`. It provides detailed inf
 - `GET /api/reports/:id/download` (auth required)
 - `GET /api/report/:id/download` (compatibility path)
 
-### UI
+## Running with Docker
+
+1. **Copy the environment example file:**
+   ```bash
+   cp .env.example .env
+   ```
+2. **Fill in the values in `.env`:**
+   Open `.env` and provide your API keys and secrets.
+3. **Build and start the application:**
+   ```bash
+   docker compose up --build
+   ```
+   Docker Compose automatically picks up variables from the `.env` file in the same directory. Note that the application inside Docker connects to the MongoDB container using `mongodb:27017`. You don't need to change `MONGODB_URI` in your `.env` for Docker runs, as it is handled automatically in `docker-compose.yml`.
+
+### Troubleshooting Connection Errors
+
+If you see an error like `connect ECONNREFUSED ::1:27017` or `127.0.0.1:27017`, it means your application is trying to connect to its own `localhost` instead of the database container.
+
+1. Ensure you are using the latest `docker-compose.yml` which points `MONGODB_URI` to `mongodb:27017`.
+2. If you are overriding variables, make sure you don't pass `MONGODB_URI=mongodb://localhost:27017` to the Docker container, as `localhost` inside a container refers to the container itself.
+
+### Passing Environment Variables Manually
+
+If you don't want to use a `.env` file, you can pass variables directly via the shell:
+```bash
+GEMINI_API_KEY=your_key docker compose up
+```
+
+## UI
 
 A dedicated page is available at `/vendor-audit` to:
 
