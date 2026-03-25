@@ -1,0 +1,28 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/accessibility-agent
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - TINYFISH_API_KEY=${TINYFISH_API_KEY}
+      - YUTORI_API_KEY=${YUTORI_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - DEMO_LOGIN_EMAIL=${DEMO_LOGIN_EMAIL}
+      - DEMO_LOGIN_PASSWORD=${DEMO_LOGIN_PASSWORD}
+      - DEMO_LOGIN_USER_ID=${DEMO_LOGIN_USER_ID}
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
